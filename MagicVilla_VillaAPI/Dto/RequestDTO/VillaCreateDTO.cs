@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MagicVilla_VillaAPI.Dto
+namespace MagicVilla_VillaAPI.Dto.RequestDTO
 {
     public class VillaCreateDTO
-    { 
+    {
         public string Name { get; set; }
         public DateTime CreatedDate { get; set; }
         public int Occupancy { get; set; }
