@@ -4,5 +4,5 @@ namespace MagicVilla_VillaAPI.Models;
 
 public class ApplicationUser : IdentityUser
 {
-    private string Name { get; set; }
+    public string Name { get; set; }
 }
