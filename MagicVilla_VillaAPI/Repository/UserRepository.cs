@@ -17,15 +17,17 @@ public class UserRepository : IUserRepository
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private string secretKey;
     private readonly IMapper _mapper;
 
-    public UserRepository(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration)
+    public UserRepository(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
     {
         _db = db;
         _userManager = userManager;
         secretKey = configuration.GetValue<string>("ApiSettings:Secret");
         _mapper = mapper;
+        _roleManager = roleManager;
     }
 
     public bool IsUniqueUser(string username)
@@ -54,7 +56,7 @@ public class UserRepository : IUserRepository
 
         var roles = await _userManager.GetRolesAsync(user);
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes("xd");
+        var key = Encoding.ASCII.GetBytes(secretKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
@@ -94,6 +96,11 @@ public class UserRepository : IUserRepository
             var result = await _userManager.CreateAsync(user, registerationRequestDTO.Password);
             if (result.Succeeded)
             {
+                if (!_roleManager.RoleExistsAsync("admin").GetAwaiter().GetResult())
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("admin"));
+                    await _roleManager.CreateAsync(new IdentityRole("customer"));
+                }
                 await _userManager.AddToRoleAsync(user, "admin");
                 var userToReturn =
                     _db.ApplicationUsers.FirstOrDefault(u => u.UserName == registerationRequestDTO.UserName);
